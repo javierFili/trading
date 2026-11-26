@@ -1,0 +1,7 @@
+# Test-only dummy secrets. They protect nothing and are never used outside tests.
+security:
+  jwt-secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQtbm90LWZvci1wcm9kdWN0aW9uLXVzZQ==
+  master-key: dGVzdC1vbmx5LW1hc3Rlci1rZXktMzItYnl0ZXMhISE=
+logging:
+  level:
+    com.cryptotrading: INFO

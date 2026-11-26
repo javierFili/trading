@@ -1,0 +1,115 @@
+# Crypto Trading System — base configuration.
+# Secrets are NEVER stored here. Everything sensitive comes from environment variables (see .env.example).
+spring:
+  application:
+    name: crypto-trading-system
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${CTS_DB_URL:jdbc:postgresql://localhost:55432/crypto_trading}
+    username: ${CTS_DB_USERNAME:crypto_trading}
+    password: ${CTS_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # schema is owned exclusively by Flyway
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true          # never allow wiping the database
+  jackson:
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+trading:
+  # BACKTEST (default) | TESTNET | LIVE (locked in this build)
+  mode: ${CTS_TRADING_MODE:BACKTEST}
+  symbols: BTC/USDT
+  timeframe: H1
+  approval-ttl: 10m
+  max-price-deviation: 0.003
+  live:
+    enabled: false
+
+# Hard risk limits (docs/TRADING_RULES.md). Changing them requires a restart and is audited at startup.
+risk:
+  max-risk-per-trade: 0.50
+  max-daily-loss: 2.00
+  max-open-positions: 1
+  min-quote-reserve: 20
+  max-position-notional: 80
+  min-reward-to-risk: 1.5
+  fee-rate: 0.001
+  slippage-rate: 0.0005
+  stop-limit-buffer: 0.002
+  max-symbol-rules-age: 24h
+  max-consecutive-failures: 3
+  initial-capital: 100
+
+strategies:
+  ema-rsi-macd:
+    enabled: true
+    ema-fast: 20
+    ema-slow: 50
+    rsi-period: 14
+    rsi-min: 50
+    rsi-max: 70
+    macd-fast: 12
+    macd-slow: 26
+    macd-signal: 9
+    atr-period: 14
+    volume-period: 20
+    volume-factor: 1.0
+    stop-atr-multiplier: 1.5
+    take-profit-atr-multiplier: 3.0
+    lookback: 300
+
+# Secrets: environment variables only. Startup fails if the required ones are missing.
+security:
+  jwt-secret: ${CTS_JWT_SECRET:}
+  master-key: ${CTS_MASTER_KEY:}
+  jwt-ttl: 30m
+  max-failed-logins: 5
+  lock-duration: 15m
+  bootstrap:
+    username: ${CTS_ADMIN_USERNAME:}
+    password: ${CTS_ADMIN_PASSWORD:}
+
+binance:
+  testnet:
+    api-key: ${CTS_BINANCE_TESTNET_API_KEY:}
+    api-secret: ${CTS_BINANCE_TESTNET_API_SECRET:}
+  live:
+    api-key: ${CTS_BINANCE_LIVE_API_KEY:}
+    api-secret: ${CTS_BINANCE_LIVE_API_SECRET:}
+  recv-window: 5000ms
+  connect-timeout: 5s
+  read-timeout: 10s
+  max-weight-per-minute: 3000
+
+notifications:
+  # Extra WebSocket origins (e.g. http://localhost:5173 for the Vite dev server). Empty = same origin only.
+  allowed-origins: ${CTS_WS_ALLOWED_ORIGINS:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
